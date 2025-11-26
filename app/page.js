@@ -40,17 +40,15 @@ export default function Page() {
       .padStart(2, "0")}`;
   };
 
-  const openManualModal = () => setManualModal(true);
-
   const parseTime = (str) => {
     const [h, m, s] = str.split(":").map((n) => parseInt(n) || 0);
     return h * 3600 + m * 60 + s;
   };
 
   const handleTimeChange = (e) => {
-    let val = e.target.value.replace(/[^\d]/g, ""); // оставляем только цифры
+    let val = e.target.value.replace(/[^\d]/g, "");
     if (val.length > 6) val = val.slice(0, 6);
-    while (val.length < 6) val = "0" + val; // добиваем до 6 цифр
+    while (val.length < 6) val = "0" + val;
     const h = val.slice(0, 2);
     const m = val.slice(2, 4);
     const s = val.slice(4, 6);
@@ -85,11 +83,7 @@ export default function Page() {
         Трекер задач
       </motion.h1>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex gap-3 items-center"
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 items-center">
         <input
           className="bg-gray-700 p-4 rounded-xl w-full focus:ring-2 ring-blue-400 outline-none transition"
           placeholder="Новая задача..."
@@ -103,13 +97,14 @@ export default function Page() {
           ▶
         </button>
         <button
-          onClick={openManualModal}
+          onClick={() => setManualModal(true)}
           className="bg-gray-600 hover:bg-gray-500 px-5 py-3 rounded-xl font-bold transition"
         >
           +
         </button>
       </motion.div>
 
+      {/* Активная задача */}
       <AnimatePresence>
         {activeTask && (
           <motion.div
@@ -155,13 +150,14 @@ export default function Page() {
         </AnimatePresence>
       </div>
 
+      {/* Модальное окно */}
       <AnimatePresence>
         {manualModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center"
+            className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50"
           >
             <motion.div
               initial={{ scale: 0.8 }}
@@ -169,7 +165,7 @@ export default function Page() {
               exit={{ scale: 0.8 }}
               className="bg-gray-700 p-6 rounded-2xl w-96"
             >
-              <h3 className="text-xl font-bold mb-4">Добавить задачу</h3>
+              <h3 className="text-xl font-bold mb-4">Добавить завершённую задачу</h3>
               <input
                 className="w-full p-3 rounded-lg mb-3 bg-gray-600 outline-none"
                 placeholder="Название задачи"
@@ -189,10 +185,7 @@ export default function Page() {
                 >
                   Отмена
                 </button>
-                <button
-                  onClick={addManual}
-                  className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600"
-                >
+                <button onClick={addManual} className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600">
                   Добавить
                 </button>
               </div>
