@@ -1,79 +1,129 @@
 "use client";
+
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Page() {
-  const [taskName, setTaskName] = useState("");
-  const [activeTask, setActiveTask] = useState(null);
-  const [completed, setCompleted] = useState([]);
+  const [newTask, setNewTask] = useState("");
+  const [currentTask, setCurrentTask] = useState(null);
+  const [finishedTasks, setFinishedTasks] = useState([]);
 
-  const startTask = () => {
-    if (!taskName.trim()) return;
-    setActiveTask({ name: taskName, start: new Date(), elapsed: 0 });
-    setTaskName("");
-  };
+  function handleStart() {
+    if (!newTask.trim()) return;
+    setCurrentTask({ title: newTask, startedAt: new Date(), secondsPassed: 0 });
+    setNewTask("");
+  }
 
-  const stopTask = () => {
-    if (!activeTask) return;
-    const end = new Date();
-    const diff = Math.floor((end - activeTask.start) / 1000);
-    setCompleted([{ ...activeTask, end, diff }, ...completed]);
-    setActiveTask(null);
-  };
+  function handleStop() {
+    if (!currentTask) return;
+    const stoppedAt = new Date();
+    const duration = Math.floor((stoppedAt - currentTask.startedAt) / 1000);
+    setFinishedTasks([{ ...currentTask, stoppedAt, duration }, ...finishedTasks]);
+    setCurrentTask(null);
+  }
 
   useEffect(() => {
-    if (!activeTask) return;
-    const t = setInterval(() => {
-      setActiveTask((p) => ({ ...p, elapsed: Math.floor((Date.now() - p.start) / 1000) }));
+    if (!currentTask) return;
+    const timer = setInterval(() => {
+      setCurrentTask((prev) => ({
+        ...prev,
+        secondsPassed: Math.floor((Date.now() - prev.startedAt) / 1000),
+      }));
     }, 1000);
-    return () => clearInterval(t);
-  }, [activeTask]);
+    return () => clearInterval(timer);
+  }, [currentTask]);
 
-  const format = (s) => `${Math.floor(s/3600)}ч ${Math.floor((s%3600)/60)}м ${s%60}с`;
+  function showTime(sec) {
+    const hours = Math.floor(sec / 3600);
+    const minutes = Math.floor((sec % 3600) / 60);
+    const seconds = sec % 60;
+    return `${hours}ч ${minutes}м ${seconds}с`;
+  }
 
-  const addManual = () => {
+  function addTaskManually() {
     const now = new Date();
-    setCompleted([{ name: taskName || "Без названия", start: now, end: now, diff: 0 }, ...completed]);
-    setTaskName("");
-  };
+    setFinishedTasks([
+      { title: newTask || "Без названия", startedAt: now, stoppedAt: now, duration: 0 },
+      ...finishedTasks,
+    ]);
+    setNewTask("");
+  }
 
   return (
-    <div className="p-6 max-w-xl mx-auto space-y-6">
-      <h1 className="text-2xl mb-4">Трекер задач</h1>
+    <div className="min-h-screen bg-gradient-to-b from-black to-neutral-900 p-8 text-white max-w-2xl mx-auto">
+      <motion.h1
+        initial={{ opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="text-4xl font-bold text-center mb-6"
+      >
+        Мой трекер задач
+      </motion.h1>
 
-      <div className="flex gap-3">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 items-center mb-6">
         <input
-          className="bg-neutral-800 p-3 rounded w-full"
-          placeholder="Новая задача..."
-          value={taskName}
-          onChange={(e) => setTaskName(e.target.value)}
+          type="text"
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+          placeholder="Введите задачу"
+          className="bg-neutral-800 rounded-xl p-4 w-full outline-none focus:ring-2 ring-blue-500 transition"
         />
-        <button onClick={startTask} className="bg-blue-600 px-4 py-2 rounded">▶</button>
-        <button onClick={addManual} className="bg-neutral-700 px-4 py-2 rounded">+</button>
-      </div>
+        <button
+          onClick={handleStart}
+          className="px-5 py-3 bg-blue-600 rounded-xl font-bold hover:bg-blue-700 shadow-lg"
+        >
+          ▶
+        </button>
+        <button
+          onClick={addTaskManually}
+          className="px-5 py-3 bg-neutral-700 rounded-xl font-bold hover:bg-neutral-600"
+        >
+          +
+        </button>
+      </motion.div>
 
-      {activeTask && (
-        <div className="bg-neutral-900 p-4 rounded">
-          <div className="text-lg">{activeTask.name}</div>
-          <div className="text-blue-400 text-xl font-bold">{format(activeTask.elapsed)}</div>
-          <div className="text-neutral-400 text-sm mt-1">
-            {activeTask.start.toLocaleTimeString()} — ...
-          </div>
-          <button onClick={stopTask} className="mt-3 bg-red-600 px-3 py-2 rounded w-full">Остановить</button>
-        </div>
-      )}
+      <AnimatePresence>
+        {currentTask && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.3 }}
+            className="bg-neutral-900 p-6 rounded-2xl shadow-xl border border-neutral-700 mb-6"
+          >
+            <div className="text-xl font-semibold">{currentTask.title}</div>
+            <div className="text-blue-400 text-3xl font-extrabold mt-2">{showTime(currentTask.secondsPassed)}</div>
+            <div className="text-neutral-400 text-sm mt-1">{currentTask.startedAt.toLocaleTimeString()} — ...</div>
+            <button
+              onClick={handleStop}
+              className="mt-4 w-full bg-red-600 hover:bg-red-700 px-4 py-3 rounded-xl font-bold shadow-lg"
+            >
+              Остановить
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <h2 className="text-xl">Выполненные задачи</h2>
-
-      {completed.length === 0 && <div className="text-neutral-500">Выполненных задач нет</div>}
-
-      <div className="space-y-3">
-        {completed.map((t, i) => (
-          <div key={i} className="bg-neutral-900 p-4 rounded">
-            <div>{t.name}</div>
-            <div className="text-neutral-400 text-sm">{t.start.toLocaleTimeString()} — {t.end.toLocaleTimeString()}</div>
-            <div className="text-blue-400 font-bold">{format(t.diff)}</div>
-          </div>
-        ))}
+      <h2 className="text-2xl font-bold mb-4">Завершённые задачи</h2>
+      <div className="space-y-4">
+        <AnimatePresence>
+          {finishedTasks.map((task, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 30 }}
+              transition={{ duration: 0.25 }}
+              className="bg-neutral-900 p-5 rounded-2xl border border-neutral-700 hover:border-neutral-500"
+            >
+              <div className="text-lg font-medium">{task.title}</div>
+              <div className="text-neutral-500 text-sm">
+                {task.startedAt.toLocaleTimeString()} — {task.stoppedAt.toLocaleTimeString()}
+              </div>
+              <div className="text-blue-400 font-bold mt-1">{showTime(task.duration)}</div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
     </div>
   );
