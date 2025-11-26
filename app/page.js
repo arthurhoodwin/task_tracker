@@ -7,7 +7,10 @@ export default function Page() {
   const [activeTask, setActiveTask] = useState(null);
   const [completed, setCompleted] = useState([]);
   const [manualModal, setManualModal] = useState(false);
-  const [manualTime, setManualTime] = useState("00:00:00");
+
+  const [hours, setHours] = useState("0");
+  const [minutes, setMinutes] = useState("0");
+  const [seconds, setSeconds] = useState("0");
 
   const startTask = () => {
     if (!taskName.trim()) return;
@@ -40,24 +43,16 @@ export default function Page() {
       .padStart(2, "0")}`;
   };
 
-  const parseTime = (str) => {
-    const [h, m, s] = str.split(":").map((n) => parseInt(n) || 0);
+  const getTotalSeconds = () => {
+    const h = parseInt(hours) || 0;
+    const m = parseInt(minutes) || 0;
+    const s = parseInt(seconds) || 0;
     return h * 3600 + m * 60 + s;
-  };
-
-  const handleTimeChange = (e) => {
-    let val = e.target.value.replace(/[^\d]/g, "");
-    if (val.length > 6) val = val.slice(0, 6);
-    while (val.length < 6) val = "0" + val;
-    const h = val.slice(0, 2);
-    const m = val.slice(2, 4);
-    const s = val.slice(4, 6);
-    setManualTime(`${h}:${m}:${s}`);
   };
 
   const addManual = () => {
     const now = new Date();
-    const elapsedSec = parseTime(manualTime);
+    const elapsedSec = getTotalSeconds();
     setCompleted([
       {
         name: taskName || "Без названия",
@@ -68,7 +63,9 @@ export default function Page() {
       ...completed,
     ]);
     setTaskName("");
-    setManualTime("00:00:00");
+    setHours("0");
+    setMinutes("0");
+    setSeconds("0");
     setManualModal(false);
   };
 
@@ -83,6 +80,7 @@ export default function Page() {
         Трекер задач
       </motion.h1>
 
+      {/* Поле ввода */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 items-center">
         <input
           className="bg-gray-700 p-4 rounded-xl w-full focus:ring-2 ring-blue-400 outline-none transition"
@@ -150,7 +148,7 @@ export default function Page() {
         </AnimatePresence>
       </div>
 
-      {/* Модальное окно */}
+      {/* Модальное окно ручного добавления */}
       <AnimatePresence>
         {manualModal && (
           <motion.div
@@ -172,12 +170,34 @@ export default function Page() {
                 value={taskName}
                 onChange={(e) => setTaskName(e.target.value)}
               />
-              <input
-                className="w-full p-3 rounded-lg mb-3 bg-gray-600 outline-none"
-                placeholder="Время (чч:мм:сс)"
-                value={manualTime}
-                onChange={handleTimeChange}
-              />
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="number"
+                  min="0"
+                  className="w-1/3 p-3 rounded-lg bg-gray-600 outline-none"
+                  placeholder="часы"
+                  value={hours}
+                  onChange={(e) => setHours(e.target.value)}
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  className="w-1/3 p-3 rounded-lg bg-gray-600 outline-none"
+                  placeholder="минуты"
+                  value={minutes}
+                  onChange={(e) => setMinutes(e.target.value)}
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  className="w-1/3 p-3 rounded-lg bg-gray-600 outline-none"
+                  placeholder="секунды"
+                  value={seconds}
+                  onChange={(e) => setSeconds(e.target.value)}
+                />
+              </div>
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setManualModal(false)}
