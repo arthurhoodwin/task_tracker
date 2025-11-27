@@ -38,9 +38,7 @@ export default function Page() {
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);
     const sec = s % 60;
-    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${sec
-      .toString()
-      .padStart(2, "0")}`;
+    return `${h}ч ${m}м ${sec}с`;
   };
 
   const getTotalSeconds = () => {
@@ -70,54 +68,39 @@ export default function Page() {
   };
 
   return (
-    <div className="p-8 max-w-2xl mx-auto space-y-8 text-white min-h-screen bg-gray-800">
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-4xl font-bold text-center mb-6 tracking-wide"
-      >
-        Трекер задач
-      </motion.h1>
+    <div className="p-6 max-w-xl mx-auto space-y-8">
 
-      {/* Поле ввода */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 items-center">
+      <div className="flex items-center gap-3">
         <input
-          className="bg-gray-700 p-4 rounded-xl w-full focus:ring-2 ring-blue-400 outline-none transition"
+          className="bg-[#0A0A0A] border border-[#222] text-sm px-4 py-3 rounded-xl w-full"
           placeholder="Новая задача..."
           value={taskName}
           onChange={(e) => setTaskName(e.target.value)}
         />
         <button
           onClick={startTask}
-          className="bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-xl font-bold transition"
+          className="bg-[#111] border border-[#222] px-4 py-3 rounded-xl"
         >
           ▶
         </button>
-        <button
-          onClick={() => setManualModal(true)}
-          className="bg-gray-600 hover:bg-gray-500 px-5 py-3 rounded-xl font-bold transition"
-        >
-          +
-        </button>
-      </motion.div>
+      </div>
 
-      {/* Активная задача */}
       <AnimatePresence>
         {activeTask && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.3 }}
-            className="bg-gray-700 p-6 rounded-2xl border border-gray-600"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="border-b border-[#222] pb-4"
           >
-            <div className="text-xl font-semibold">{activeTask.name}</div>
-            <div className="text-blue-300 text-3xl font-extrabold mt-2">{format(activeTask.elapsed)}</div>
-            <div className="text-gray-400 text-sm mt-1">{activeTask.start.toLocaleTimeString()} — ...</div>
+            <div className="text-base">{activeTask.name}</div>
+            <div className="text-blue-400 text-xl mt-1">{format(activeTask.elapsed)}</div>
+            <div className="text-gray-500 text-xs mt-1">
+              {activeTask.start.toLocaleTimeString()} — ...
+            </div>
             <button
               onClick={stopTask}
-              className="mt-4 w-full bg-red-500 hover:bg-red-600 px-4 py-3 rounded-xl font-bold transition"
+              className="mt-3 bg-[#300] px-4 py-2 rounded-lg w-full"
             >
               Остановить
             </button>
@@ -125,30 +108,28 @@ export default function Page() {
         )}
       </AnimatePresence>
 
-      <h2 className="text-2xl font-bold mt-10">Выполненные задачи</h2>
-
-      <div className="space-y-4">
-        <AnimatePresence>
-          {completed.map((t, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 40 }}
-              transition={{ duration: 0.25 }}
-              className="bg-gray-700 p-5 rounded-2xl border border-gray-600"
-            >
-              <div className="text-lg font-medium">{t.name}</div>
-              <div className="text-gray-400 text-sm">
-                {t.start.toLocaleTimeString()} — {t.end.toLocaleTimeString()}
-              </div>
-              <div className="text-blue-300 font-bold text-lg mt-1">{format(t.diff)}</div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-medium">Выполненные задачи</h2>
+        <button
+          onClick={() => setManualModal(true)}
+          className="text-xl px-3 py-1 bg-[#111] border border-[#222] rounded-xl"
+        >
+          +
+        </button>
       </div>
 
-      {/* Модальное окно ручного добавления */}
+      <div className="space-y-5">
+        {completed.map((t, i) => (
+          <div key={i} className="border-b border-[#222] pb-4">
+            <div className="text-base">{t.name}</div>
+            <div className="text-gray-600 text-xs mt-1">
+              {t.start.toLocaleTimeString()} — {t.end.toLocaleTimeString()}
+            </div>
+            <div className="text-blue-400 text-base mt-1">{format(t.diff)}</div>
+          </div>
+        ))}
+      </div>
+
       <AnimatePresence>
         {manualModal && (
           <motion.div
@@ -161,11 +142,11 @@ export default function Page() {
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.8 }}
-              className="bg-gray-700 p-6 rounded-2xl w-96"
+              className="bg-[#111] p-6 rounded-2xl w-80 border border-[#333]"
             >
-              <h3 className="text-xl font-bold mb-4">Добавить завершённую задачу</h3>
+              <h3 className="text-lg mb-4">Добавить задачу</h3>
               <input
-                className="w-full p-3 rounded-lg mb-3 bg-gray-600 outline-none"
+                className="w-full p-3 rounded-lg mb-3 bg-[#222] outline-none"
                 placeholder="Название задачи"
                 value={taskName}
                 onChange={(e) => setTaskName(e.target.value)}
@@ -174,8 +155,8 @@ export default function Page() {
                 <input
                   type="number"
                   min="0"
-                  className="w-1/3 p-3 rounded-lg bg-gray-600 outline-none"
-                  placeholder="часы"
+                  className="w-1/3 p-3 rounded-lg bg-[#222] outline-none"
+                  placeholder="ч"
                   value={hours}
                   onChange={(e) => setHours(e.target.value)}
                 />
@@ -183,8 +164,8 @@ export default function Page() {
                   type="number"
                   min="0"
                   max="59"
-                  className="w-1/3 p-3 rounded-lg bg-gray-600 outline-none"
-                  placeholder="минуты"
+                  className="w-1/3 p-3 rounded-lg bg-[#222] outline-none"
+                  placeholder="м"
                   value={minutes}
                   onChange={(e) => setMinutes(e.target.value)}
                 />
@@ -192,8 +173,8 @@ export default function Page() {
                   type="number"
                   min="0"
                   max="59"
-                  className="w-1/3 p-3 rounded-lg bg-gray-600 outline-none"
-                  placeholder="секунды"
+                  className="w-1/3 p-3 rounded-lg bg-[#222] outline-none"
+                  placeholder="с"
                   value={seconds}
                   onChange={(e) => setSeconds(e.target.value)}
                 />
@@ -201,11 +182,11 @@ export default function Page() {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setManualModal(false)}
-                  className="px-4 py-2 rounded-lg bg-gray-500 hover:bg-gray-400"
+                  className="px-4 py-2 rounded-lg bg-[#333]"
                 >
                   Отмена
                 </button>
-                <button onClick={addManual} className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600">
+                <button onClick={addManual} className="px-4 py-2 rounded-lg bg-blue-600">
                   Добавить
                 </button>
               </div>
@@ -213,6 +194,7 @@ export default function Page() {
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 }
